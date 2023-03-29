@@ -11,16 +11,16 @@ class NetflixReader:
         self.test_data = pd.DataFrame()
         self._type_dict = {
             "index": "int",
-                           "id": "string",
-                           "title": "string",
-                           "type": "category",
-                           "release_year": "int",
-                           "runtime": "int",
-                           "genres": "string",
-                           "production_countries": "string",
-                           "imdb_id": "string",
-                           "imdb_score": "float",
-                           "imdb_votes": "int"
+            "id": "string",
+            "title": "string",
+            "type": "category",
+            "release_year": "int",
+            "runtime": "int",
+            "genres": "string",
+            "production_countries": "string",
+            "imdb_id": "string",
+            "imdb_score": "float",
+            "imdb_votes": "int"
         }
         self._data_split_ratios = {"train": 0.8, "val": 0.2, "test": 0.0}
         self.data_leakage_warning = False
@@ -88,3 +88,9 @@ class NetflixReader:
 
     def _is_data_leakage(self):
         pass
+
+
+reader = NetflixReader()
+reader.read_netflix_data("assign-1/data/netflix_data.csv")
+reader.preprocess()
+reader.write_netflix_data("assign-1/output_data")
