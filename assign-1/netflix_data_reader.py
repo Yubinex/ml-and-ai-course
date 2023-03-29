@@ -88,9 +88,3 @@ class NetflixReader:
 
     def _is_data_leakage(self):
         pass
-
-
-reader = NetflixReader()
-reader.read_netflix_data("assign-1/data/netflix_data.csv")
-reader.preprocess()
-reader.write_netflix_data("assign-1/output_data")
