@@ -25,7 +25,6 @@ class NetflixReader:
         self._data_split_ratios = {"train": 0.8, "val": 0.2, "test": 0.0}
         self.data_leakage_warning = False
 
-    # TODO: implement
     def set_data_split_ratio(self, new_split_ratio: dict):
         # Check that the input is a dictionary
         if not isinstance(new_split_ratio, dict):
