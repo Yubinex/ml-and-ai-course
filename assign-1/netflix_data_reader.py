@@ -45,22 +45,22 @@ class NetflixReader:
 
     def write_netflix_data(self, file_path: str):
         # Create directories for the train/val/test splits if they don't exist
-        os.makedirs(os.path.join(file_path, "train"), exist_ok=True)
-        os.makedirs(os.path.join(file_path, "val"), exist_ok=True)
-        os.makedirs(os.path.join(file_path, "test"), exist_ok=True)
+        os.makedirs(os.path.abspath(file_path), exist_ok=True)
+        os.makedirs(os.path.abspath(file_path), exist_ok=True)
+        os.makedirs(os.path.abspath(file_path), exist_ok=True)
 
         # Write the train split as a .pickle file
-        train_file = os.path.join(file_path, "train", "train_data.pickle")
+        train_file = os.path.join(file_path, "train.pickle")
         with open(train_file, "wb") as f:
             pd.to_pickle(self.train_data, f)
 
         # Write the val split as a .pickle file
-        val_file = os.path.join(file_path, "val", "val_data.pickle")
+        val_file = os.path.join(file_path, "val.pickle")
         with open(val_file, "wb") as f:
             pd.to_pickle(self.val_data, f)
 
         # Write the test split as a .pickle file
-        test_file = os.path.join(file_path, "test", "test_data.pickle")
+        test_file = os.path.join(file_path, "test.pickle")
         with open(test_file, "wb") as f:
             pd.to_pickle(self.test_data, f)
 
