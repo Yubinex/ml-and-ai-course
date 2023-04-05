@@ -4,11 +4,15 @@ import pandas as pd
 
 class NetflixReader:
     def __init__(self):
+        # Create empty pandas DataFrames to hold the
+        # Netflix dataset, train data, validation data, and test data
         self.netflix_data_raw = pd.DataFrame()
         self.netflix_data = pd.DataFrame()
         self.train_data = pd.DataFrame()
         self.val_data = pd.DataFrame()
         self.test_data = pd.DataFrame()
+        # Create a dictionary that maps column names to
+        # data types for the Netflix dataset
         self._type_dict = {
             "index": "int",
             "id": "string",
@@ -22,6 +26,8 @@ class NetflixReader:
             "imdb_score": "float",
             "imdb_votes": "int"
         }
+        # Create a dictionary containing the ratios for the train,
+        # validation, and test splits
         self._data_split_ratios = {"train": 0.8, "val": 0.2, "test": 0.0}
         self.data_leakage_warning = False
 
@@ -42,7 +48,12 @@ class NetflixReader:
             raise ValueError('Values in the input dictionary must add up to 1.')
 
     def read_netflix_data(self, file_path: str):
+        # Reads the Netflix data from the specified file_path using pandas' read_csv method,
+        # and saves it to the netflix_data_raw attribute of the NetflixData class.
+        # The delimiter is set to ">" because that is the delimiter used in the data file.
         self.netflix_data_raw = pd.read_csv(file_path, delimiter=">")
+
+        # Returns the raw Netflix data
         return self.netflix_data_raw
 
     def preprocess(self):
@@ -77,6 +88,7 @@ class NetflixReader:
             pd.to_pickle(self.test_data, f)
 
     def _drop_missing_values(self):
+        # Drop rows with missing values (i.e., NaN values)
         self.netflix_data_raw.dropna(inplace=True)
 
     def _set_types(self):
@@ -88,6 +100,7 @@ class NetflixReader:
                 self.netflix_data[col] = self.netflix_data_raw[col].astype(dtype)
 
     # TODO: Not finished!!
+    # -> No idea why we would need to implement this method ¯\_(ツ)_/¯
     @staticmethod
     def _convert_string_to_list(str_list: str):
         return str_list.split(',')
@@ -103,7 +116,7 @@ class NetflixReader:
 
     def _split_data(self):
         # Split the Netflix dataset into three portions - train, validation, and test - using the specified ratios
-        # Sample `frac` proportion of rows randomly without replacement
+        # `frac` specifies the fraction of rows to sample randomly without replacement
         self.train_data = self.netflix_data.sample(frac=self._data_split_ratios["train"])
         self.val_data = self.netflix_data.sample(frac=self._data_split_ratios["val"])
         self.test_data = self.netflix_data.sample(frac=self._data_split_ratios["test"])
