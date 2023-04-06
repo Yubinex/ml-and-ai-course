@@ -2,6 +2,10 @@ import os
 import pandas as pd
 
 
+# pd.set_option('display.max_rows', None)
+pd.set_option('display.max_columns', None)
+
+
 class NetflixReader:
     def __init__(self):
         # Create empty pandas DataFrames to hold the
@@ -99,12 +103,12 @@ class NetflixReader:
                 # If the column exists, convert its data type and save it to the processed data
                 self.netflix_data[col] = self.netflix_data_raw[col].astype(dtype)
 
-    # TODO: Not finished!!
-    # -> No idea why we would need to implement this method ¯\_(ツ)_/¯
+    # Method not needed. Implemented in next method.
     @staticmethod
     def _convert_string_to_list(str_list: str):
-        return str_list.split(',')
+        pass
 
+    # BUG: Adds one empty column before adding actual genres
     def _convert_list_to_bool(self, column_to_distribute: str):
         # Extract the list of genres from the specified column, remove unwanted characters, and split them into separate strings
         genres = self.netflix_data[column_to_distribute].str.strip("[]").str.replace("'", "").str.split(", ")
