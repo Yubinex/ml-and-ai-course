@@ -14,17 +14,17 @@ class NetflixReader:
         # Create a dictionary that maps column names to
         # data types for the Netflix dataset
         self._type_dict = {
-            "index": "int",
+            "index": int,
             "id": "string",
             "title": "string",
             "type": "category",
-            "release_year": "int",
-            "runtime": "int",
+            "release_year": int,
+            "runtime": int,
             "genres": "string",
             "production_countries": "string",
             "imdb_id": "string",
             "imdb_score": "float",
-            "imdb_votes": "int"
+            "imdb_votes": int
         }
         # Create a dictionary containing the ratios for the train,
         # validation, and test splits
@@ -111,7 +111,8 @@ class NetflixReader:
         # Loop over each genre in the list of genres
         for genre in set(genre for genres_list in genres for genre in genres_list):
             # Column name = lowercase version of current genre with spaces replaced by '_'
-            # For each row in the DataFrame, check if the current genre is in the list of genres for that row, and store the result as a boolean value in the new column
+            # For each row in the DataFrame, check if the current genre is in the list of genres for that row,
+            # and store the result as a boolean value in the new column
             self.netflix_data[f"{genre.lower().replace(' ', '_')}"] = genres.apply(lambda x: genre in x)  # .apply() -> applies a funciton along a given axis
 
     def _split_data(self):
