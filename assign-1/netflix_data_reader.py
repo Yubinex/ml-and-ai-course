@@ -131,10 +131,23 @@ class NetflixReader:
         # Shuffle the data randomly
         netflix_data_copy = netflix_data_copy.sample(frac=1)
 
-        # Split the shuffled data into three portions - train, validation, and test - using the specified ratios
-        self.train_data = netflix_data_copy[:int(len(netflix_data_copy)*self._data_split_ratios["train"])]
-        self.val_data = netflix_data_copy[int(len(netflix_data_copy)*self._data_split_ratios["train"]):int(len(netflix_data_copy)*(self._data_split_ratios["train"]+self._data_split_ratios["val"]))]
-        self.test_data = netflix_data_copy[int(len(netflix_data_copy)*(self._data_split_ratios["train"]+self._data_split_ratios["val"])):]
+        # Determine the sizes of each data split based on the split ratios
+        num_samples: int = len(netflix_data_copy)
+        train_size: int = int(num_samples * self._data_split_ratios["train"])
+        val_size: int = int(num_samples * self._data_split_ratios["val"])
+
+        # Slice the original dataset into the appropriate splits
+        # The training data is the first `train_size` samples of the dataset
+        self.train_data = netflix_data_copy[:train_size]
+
+        # The validation data is the portion of the dataset immediately following the training data,
+        # and is composed of the `val_size` samples after the end of the training data
+        self.val_data = netflix_data_copy[train_size:train_size+val_size]
+
+        # The test data is the remaining portion of the dataset after the training and validation data,
+        # and is composed of all samples starting from the end of the validation data
+        self.test_data = netflix_data_copy[train_size+val_size:]
+
 
     def _is_data_leakage(self) -> Tuple[bool, Optional[pd.DataFrame]]:
         # Check for intersections between train and validation datasets
