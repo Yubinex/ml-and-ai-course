@@ -108,12 +108,11 @@ class NetflixReader:
     def _convert_string_to_list(str_list: str):
         pass
 
-    # BUG: Adds one empty column
     def _convert_list_to_bool(self, column_to_distribute: str):
         # Extract the list of genres from the specified column, remove unwanted characters, and split them into separate strings
         genres = self.netflix_data[column_to_distribute].str.strip("[]").str.replace("'", "").str.split(", ")
         # Loop over each genre in the list of genres
-        for genre in set(genre for genres_list in genres for genre in genres_list):
+        for genre in set(genre for genres_list in genres for genre in genres_list if genre):  # => `if genre` to check if string not empty
             # Column name = lowercase version of current genre with spaces replaced by '_'
             # For each row in the DataFrame, check if the current genre is in the list of genres for that row,
             # and store the result as a boolean value in the new column
