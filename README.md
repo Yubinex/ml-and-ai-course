@@ -1,7 +1,7 @@
 # ml-and-ai-course
 Repository for all projects done during the course.
 
-### IMPORTANT
+### IMPORTANT - When using PyCharm
 Add **new configuration** in **PyCharm** to set the correct working directory.
 Otherwise, the paths in `run_netflix_reader.py` need to be changed.
 
