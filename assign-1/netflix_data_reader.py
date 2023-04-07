@@ -133,8 +133,9 @@ class NetflixReader:
 
         # Determine the sizes of each data split based on the split ratios
         num_samples: int = len(netflix_data_copy)
-        train_size: int = int(num_samples * self._data_split_ratios["train"])
-        val_size: int = int(num_samples * self._data_split_ratios["val"])
+        train_size: int = round(num_samples * self._data_split_ratios["train"])
+        val_size: int = round(num_samples * self._data_split_ratios["val"])
+        test_size: int = num_samples - train_size - val_size
 
         # Slice the original dataset into the appropriate splits
         # The training data is the first `train_size` samples of the dataset
@@ -146,8 +147,12 @@ class NetflixReader:
 
         # The test data is the remaining portion of the dataset after the training and validation data,
         # and is composed of all samples starting from the end of the validation data
-        self.test_data = netflix_data_copy[train_size+val_size:]
+        self.test_data = netflix_data_copy[train_size+val_size:train_size+val_size+test_size]
 
+        print("Samples in train dataset:", len(self.train_data))
+        print("Samples in validation dataset:", len(self.val_data))
+        print("Samples in test dataset:", len(self.test_data))
+        print("Total sample size:", num_samples)
 
     def _is_data_leakage(self) -> Tuple[bool, Optional[pd.DataFrame]]:
         # Check for intersections between train and validation datasets
