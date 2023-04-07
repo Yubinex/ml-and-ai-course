@@ -68,13 +68,7 @@ class NetflixReader:
         self.netflix_data.drop(columns="genres", inplace=True)
         self._split_data()
         self.data_leakage_warning = self._is_data_leakage()
-        if self.data_leakage_warning[0]:
-            print(f"{__class__.__name__}:")
-            print(f"Warning: there is data leakage between datasets.")
-            print(f"Intersecting data:")
-            print(self.data_leakage_warning[1])
-        else:
-            print(f"{__class__.__name__}: No data leakage found.")
+        self._print_data_leakage_warning()
 
     def write_netflix_data(self, file_path: str) -> None:
         # Create directories for the train/val/test splits if they don't exist
@@ -149,10 +143,26 @@ class NetflixReader:
         # and is composed of all samples starting from the end of the validation data
         self.test_data = netflix_data_copy[train_size+val_size:train_size+val_size+test_size]
 
-        print("Samples in train dataset:", len(self.train_data))
-        print("Samples in validation dataset:", len(self.val_data))
-        print("Samples in test dataset:", len(self.test_data))
-        print("Total sample size:", num_samples)
+        # Print out dataset sample sizes
+        self._print_dataset_summary()
+
+    def _print_dataset_summary(self):
+        # Get the length of each set and format the number as a string with comma separators
+        train_samples = "{:,}".format(len(self.train_data))
+        val_samples = "{:,}".format(len(self.val_data))
+        test_samples = "{:,}".format(len(self.test_data))
+        total_samples = "{:,}".format(len(self.netflix_data))
+
+        # f"{:<13}" -> left-align the argument .format() within a field of 13 characters to ensure correct alignment
+        print("╔══════════════════════════════════════╗")
+        print("║          Dataset Summary Report      ║")
+        print("╠════════════════════╦═════════════════╣")
+        print("║ Train dataset      ║   {:<13} ║".format(train_samples))
+        print("║ Validation dataset ║   {:<13} ║".format(val_samples))
+        print("║ Test dataset       ║   {:<13} ║".format(test_samples))
+        print("╠════════════════════╬═════════════════╣")
+        print("║ Total sample size  ║   {:<13} ║".format(total_samples))
+        print("╚════════════════════╩═════════════════╝")
 
     def _is_data_leakage(self) -> Tuple[bool, Optional[pd.DataFrame]]:
         # Check for intersections between train and validation datasets
@@ -179,3 +189,18 @@ class NetflixReader:
         # If there are no intersections, return a tuple with a boolean value of False
         # and None to indicate no data leakage
         return (False, None)
+
+    # Method that prints whether there is data leakage or not
+    def _print_data_leakage_warning(self):
+        if self.data_leakage_warning[0]:
+            print("╔══════════════════════════════════════╗")
+            print("║          Data Leakage Warning        ║")
+            print("╚══════════════════════════════════════╝")
+            print("\nWarning: there is data leakage between")
+            print("datasets.")
+            print("Intersecting data:")
+            print(self.data_leakage_warning[1])
+        else:
+            print("╔══════════════════════════════════════╗")
+            print("║         No data leakage found        ║")
+            print("╚══════════════════════════════════════╝")
