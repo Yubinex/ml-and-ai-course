@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+from typing import Tuple, Optional
 
 
 # pd.set_option('display.max_rows', None)
@@ -32,8 +33,8 @@ class NetflixReader:
         }
         # Create a dictionary containing the ratios for the train,
         # validation, and test splits
-        self._data_split_ratios = {"train": 0.8, "val": 0.2, "test": 0.0}
-        self.data_leakage_warning = False
+        self._data_split_ratios: dict = {"train": 0.8, "val": 0.2, "test": 0.0}
+        self.data_leakage_warning: Tuple[bool, Optional[pd.DataFrame]] = (False, None)
 
     def set_data_split_ratio(self, new_split_ratio: dict):
         # Check that the input is a dictionary
@@ -69,9 +70,16 @@ class NetflixReader:
         self._convert_list_to_bool("genres")
         self.netflix_data.drop(columns="genres", inplace=True)
         self._split_data()
-        # self.data_leakage_warning = self._is_data_leakage()
+        self.data_leakage_warning = self._is_data_leakage()
+        if self.data_leakage_warning[0]:
+            print(f"{__class__.__name__}:")
+            print(f"Warning: there is data leakage between datasets.")
+            print(f"Intersecting data:")
+            print(self.data_leakage_warning[1])
+        else:
+            print(f"{__class__.__name__}: No data leakage found.")
 
-    def write_netflix_data(self, file_path: str):
+    def write_netflix_data(self, file_path: str) -> None:
         # Create directories for the train/val/test splits if they don't exist
         os.makedirs(os.path.abspath(file_path), exist_ok=True)
 
@@ -109,7 +117,8 @@ class NetflixReader:
         pass
 
     def _convert_list_to_bool(self, column_to_distribute: str):
-        # Extract the list of genres from the specified column, remove unwanted characters, and split them into separate strings
+        # Extract the list of genres from the specified column,
+        # remove unwanted characters, and split them into separate strings
         genres = self.netflix_data[column_to_distribute].str.strip("[]").str.replace("'", "").str.split(", ")
         # Loop over each genre in the list of genres
         for genre in set(genre for genres_list in genres for genre in genres_list if genre):  # => `if genre` to check if string not empty
@@ -119,12 +128,39 @@ class NetflixReader:
             self.netflix_data[f"{genre.lower().replace(' ', '_')}"] = genres.apply(lambda x: genre in x)  # .apply() -> applies a funciton along a given axis
 
     def _split_data(self):
-        # Split the Netflix dataset into three portions - train, validation, and test - using the specified ratios
-        # `frac` specifies the fraction of rows to sample randomly without replacement
-        self.train_data = self.netflix_data.sample(frac=self._data_split_ratios["train"])
-        self.val_data = self.netflix_data.sample(frac=self._data_split_ratios["val"])
-        self.test_data = self.netflix_data.sample(frac=self._data_split_ratios["test"])
+        # Create a copy of the Netflix dataset
+        netflix_data_copy = self.netflix_data.copy()
 
-    # TODO: implement
-    def _is_data_leakage(self):
-        pass
+        # Shuffle the data randomly
+        netflix_data_copy = netflix_data_copy.sample(frac=1)
+
+        # Split the shuffled data into three portions - train, validation, and test - using the specified ratios
+        self.train_data = netflix_data_copy[:int(len(netflix_data_copy)*self._data_split_ratios["train"])]
+        self.val_data = netflix_data_copy[int(len(netflix_data_copy)*self._data_split_ratios["train"]):int(len(netflix_data_copy)*(self._data_split_ratios["train"]+self._data_split_ratios["val"]))]
+        self.test_data = netflix_data_copy[int(len(netflix_data_copy)*(self._data_split_ratios["train"]+self._data_split_ratios["val"])):]
+
+    def _is_data_leakage(self) -> Tuple[bool, Optional[pd.DataFrame]]:
+        # Check for intersections between train and validation datasets
+        train_val_intersection: pd.DataFrame = self.train_data.merge(self.val_data, how='inner')  # 'inner' => merge should only include the common rows/intersections
+        if not train_val_intersection.empty:
+            # Return a tuple with a boolean value of True to indicate data leakage
+            # and the dataframe with the intersection
+            return (True, train_val_intersection)
+
+        # Check for intersections between train and test datasets
+        train_test_intersection: pd.DataFrame = self.train_data.merge(self.test_data, how='inner')
+        if not train_test_intersection.empty:
+            # Return a tuple with a boolean value of True to indicate data leakage
+            # and the dataframe with the intersection
+            return (True, train_test_intersection)
+
+        # Check for intersections between val and test datasets
+        val_test_intersection: pd.DataFrame = self.val_data.merge(self.test_data, how='inner')
+        if not val_test_intersection.empty:
+            # Return a tuple with a boolean value of True to indicate data leakage
+            # and the dataframe with the intersection
+            return (True, val_test_intersection)
+
+        # If there are no intersections, return a tuple with a boolean value of False
+        # and None to indicate no data leakage
+        return (False, None)
