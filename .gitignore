@@ -164,7 +164,7 @@ cython_debug/
 
 # Exclude output data
 output_data
-output
+out
 
 # Exclude testing notebooks
 demo*
